@@ -19,13 +19,11 @@ connection.connect(function (err) {
     return;
   }
 
-  console.log('Database connected! ' + connection.threadId);
+  console.log('Database connected! connectionId ' + connection.threadId);
 });
 
 const upload = multer(); // parse multi-part/form-data
 const app = express();
-const regions = [];
-const data = [];
 app.use((req, res, next) => {
   res.append('Access-Control-Allow-Origin', ['*']);
   res.append('Access-Control-Allow-Methods', 'GET,POST');
@@ -34,8 +32,9 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // parsing application/x-www-form-urlencodedapp.
-app.get('/api/getproducts', (req, res) => {
-  //Fetch all products from dB 
+
+//Fetch all products from dB
+app.get('/api/getProducts', (req, res) => { 
   connection.query('SELECT * FROM product', function (error, results, fields) {
     if (error) throw error;
     console.log('The solution is: ', results);
@@ -45,16 +44,20 @@ app.get('/api/getproducts', (req, res) => {
  
 });
 
+//Add product to db
 app.post('/api/addProduct', upload.array(), (req, res) => {
+   const response = {
+     "message": "product created"
+   }
   const product = {
     "product_name": req.body.name,
     "product_category": req.body.category
   }
-  //add products to db
+
   connection.query('INSERT INTO product  SET ? ', product, function (error, results, fields) {
     if (error) throw error;
     console.log('The solution is: ', results);
-   res.status(200).json(results);
+   res.status(200).json(response);
   });
   connection.end();
   
@@ -62,22 +65,59 @@ app.post('/api/addProduct', upload.array(), (req, res) => {
 });
 app.post('/api/deleteProduct', upload.array(), (req, res) => {
  //delete a particular product using the id
-
-});
-
-app.post('/api/editproduct', upload.array(), (req, res) => {
-  //use product id to edit
-
-});
-app.post('/api/addCategory', upload.array(), (req, res) => {
- const category = {
-   "category_name": req.body.category
+ const product = {
+   
+   "product_id": req.body.id
  }
- //add products to db
+ const response = {
+   "message": "product deleted"
+ }
+
+ //delete products from db
+ connection.query(`DELETE FROM product WHERE product_id = ${product.product_id} `, function (error, results, fields) {
+   if (error) throw error;
+   res.status(200).json(response);
+ });
+ connection.end();
+
+});
+
+//edit/update product
+app.post('/api/editProduct', upload.array(), (req, res) => {
+  const product = {
+    "product_id": req.body.id,
+    "product_name": req.body.name,
+    "product_category": req.body.category
+  }
+
+  connection.query(`UPDATE product SET product_name = ?, product_category = ? WHERE product_id = ?`, [product.product_name, product.product_category, product.product_id], function (error, results, fields) {
+    if (error) throw error;
+     const response = {
+       "message": "product updated"
+     }
+     console.log(results);
+     
+   res.status(200).json(response);
+  });
+
+
+
+});
+
+//create a category
+app.post('/api/addCategory', upload.array(), (req, res) => {
+  const response = {
+    "message": "category created"
+  }
+  
+ const category = {
+   "category_name": req.body.name
+ }
+ //add category to db
  connection.query('INSERT INTO category  SET ? ', category, function (error, results, fields) {
    if (error) throw error;
-   console.log('The solution is: ', results);
-   res.status(200).json(results);
+  
+   res.status(200).json(response);
  });
  connection.end();
 });
