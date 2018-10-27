@@ -21,6 +21,7 @@ connection.connect(function (err) {
 
   console.log('Database connected! connectionId ' + connection.threadId);
 });
+connection.end();
 
 const upload = multer(); // parse multi-part/form-data
 const app = express();
@@ -40,7 +41,7 @@ app.get('/api/getProducts', (req, res) => {
     console.log('The solution is: ', results);
     res.status(200).json(results);
   });
-  connection.end();
+  
  
 });
 
@@ -58,8 +59,7 @@ app.post('/api/addProduct', upload.array(), (req, res) => {
     if (error) throw error;
     console.log('The solution is: ', results);
    res.status(200).json(response);
-  });
-  connection.end();
+  })
   
    
 });
@@ -78,7 +78,7 @@ app.post('/api/deleteProduct', upload.array(), (req, res) => {
    if (error) throw error;
    res.status(200).json(response);
  });
- connection.end();
+
 
 });
 
@@ -119,7 +119,7 @@ app.post('/api/addCategory', upload.array(), (req, res) => {
   
    res.status(200).json(response);
  });
- connection.end();
+ 
 });
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
